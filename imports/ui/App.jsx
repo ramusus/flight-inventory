@@ -1,109 +1,81 @@
-import React, { Component, PropTypes } from 'react';
-import ReactDOM from 'react-dom';
+import React from 'react';
+import {Nav, Row, Col} from 'react-bootstrap';
 import { Meteor } from 'meteor/meteor';
 import { createContainer } from 'meteor/react-meteor-data';
 
-import { Tasks } from '../api/tasks.js';
+import Flight from './Flight';
+import FlightList from './FlightList';
+import FlightForm from './FlightForm';
+import FlightsFilterForm from './FlightFilterForm';
+import Header from './Header.jsx';
 
-import Task from './Task.jsx';
-import AccountsUIWrapper from './AccountsUIWrapper.jsx';
+class App extends React.Component {
+  static propTypes = {
+    currentUser: React.PropTypes.object,
+  };
 
-// App component - represents the whole app
-class App extends Component {
   constructor(props) {
     super(props);
-
-    this.state = {
-      hideCompleted: false,
-    };
+    this.state = {editingFlight: null, searchParams: {}};
   }
 
-  handleSubmit(event) {
+  handleCreate = (flight) => {
     event.preventDefault();
+    Meteor.call('flights.insert', {flight});
+  };
 
-    // Find the text field via the React ref
-    const text = ReactDOM.findDOMNode(this.refs.textInput).value.trim();
+  handleUpdate = (flightId, flight) => {
+    event.preventDefault();
+    Meteor.call('flights.update', {flightId, flight});
+  };
 
-    Meteor.call('tasks.insert', text);
+  handleDelete = (flightId) => {
+    Meteor.call('flights.remove', {flightId});
+  };
 
-    // Clear form
-    ReactDOM.findDOMNode(this.refs.textInput).value = '';
-  }
+  handleBook = (flightId) => {
+    Meteor.call('flights.book', {flightId});
+  };
 
-  toggleHideCompleted() {
-    this.setState({
-      hideCompleted: !this.state.hideCompleted,
-    });
-  }
+  startEditing = (flight) => {
+    this.setState({editingFlight: flight});
+  };
 
-  renderTasks() {
-    let filteredTasks = this.props.tasks;
-    if (this.state.hideCompleted) {
-      filteredTasks = filteredTasks.filter(task => !task.checked);
-    }
-    return filteredTasks.map((task) => {
-      const currentUserId = this.props.currentUser && this.props.currentUser._id;
-      const showPrivateButton = task.owner === currentUserId;
+  cancelEditing = () => {
+    this.setState({editingFlight: null});
+  };
 
-      return (
-        <Task
-          key={task._id}
-          task={task}
-          showPrivateButton={showPrivateButton}
-        />
-      );
-    });
+  updateSearch = (model) => {
+    this.setState({searchParams: model});
+  };
+
+  renderFlightForm() {
+    return !this.props.currentUser || !Roles.userIsInRole(this.props.currentUser, 'managers') ? ''
+      : <FlightForm currentUser={this.props.currentUser}
+                    handleCreate={this.handleCreate} handleUpdate={this.handleUpdate}
+                    editingFlight={this.state.editingFlight} cancelEditing={this.cancelEditing}/>;
   }
 
   render() {
     return (
       <div className="container">
-        <header>
-          <h1>Todo List ({this.props.incompleteCount})</h1>
-
-          <label className="hide-completed">
-            <input
-              type="checkbox"
-              readOnly
-              checked={this.state.hideCompleted}
-              onClick={this.toggleHideCompleted.bind(this)}
-            />
-            Hide Completed Tasks
-          </label>
-
-          <AccountsUIWrapper />
-
-          { this.props.currentUser ?
-            <form className="new-task" onSubmit={this.handleSubmit.bind(this)} >
-              <input
-                type="text"
-                ref="textInput"
-                placeholder="Type to add new tasks"
-              />
-            </form> : ''
-          }
-        </header>
-
-        <ul>
-          {this.renderTasks()}
-        </ul>
+        <Header />
+        <div className="content">
+          <FlightsFilterForm currentUser={this.props.currentUser} handleSubmit={this.updateSearch}/>
+          {this.renderFlightForm()}
+          <FlightList currentUser={this.props.currentUser} params={this.state.searchParams}
+                      startEditing={this.startEditing} handleDelete={this.handleDelete}
+                      handleBook={this.handleBook}/>
+        </div>
       </div>
     );
   }
 }
 
-App.propTypes = {
-  tasks: PropTypes.array.isRequired,
-  incompleteCount: PropTypes.number.isRequired,
-  currentUser: PropTypes.object,
-};
-
-export default createContainer(() => {
-  Meteor.subscribe('tasks');
-
+App = createContainer(() => {
   return {
-    tasks: Tasks.find({}, { sort: { createdAt: -1 } }).fetch(),
-    incompleteCount: Tasks.find({ checked: { $ne: true } }).count(),
     currentUser: Meteor.user(),
   };
 }, App);
+
+export default App;

@@ -21,3 +21,9 @@ react-meteor-data
 accounts-ui
 accounts-password
 practicalmeteor:mocha
+aldeed:simple-schema
+aldeed:collection2
+dburles:factory
+mdg:validated-method
+anti:fake
+alanning:roles

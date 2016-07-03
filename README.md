@@ -1,4 +1,4 @@
-# Flight Inventory Interface
+# Flight Inventory
 
 Solution based on meteor platform. It's required to have meteor installed in the system before starting installation process. How to install meteor [here](https://www.meteor.com/install)
 
@@ -24,13 +24,19 @@ Application supports 2 type of roles: `users` and `managers`. You shoud give `ma
 
 Anonym interface:
 
+User able to see the flights and search over them.
+
 ![Anonym interface](anonym_interface.png)
 
 User interface:
 
+User able to see the flights, search and book them.
+
 ![User intergace](user_interface.png)
 
 Manager interface:
+
+User able to see the flights, search them and make CRUD operations using flight form.
 
 ![Manager interface](manager_interface.png)
 

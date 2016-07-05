@@ -1,4 +1,4 @@
-require('../node_modules/bootstrap/dist/css/bootstrap.min.css');
+//require('../node_modules/bootstrap/dist/css/bootstrap.min.css');
 require('../node_modules/react-datetime/css/react-datetime.css');
 
 import React from 'react';
